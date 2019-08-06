@@ -15,10 +15,17 @@ export class Locks {
     }
 
     public unlock(key: string) {
-        this.locked.find((x) => x.key === key).unlock();
+        this.locked.splice(
+            this.locked.findIndex((x) => x.key === key),
+            1,
+        )[0].unlock();
     }
 
     public wait(key: string): Promise<void> {
-        return this.locked.find((x) => x.key === key).wait();
+        let lock = this.locked.find((x) => x.key === key);
+
+        return lock !== undefined
+            ? lock.wait()
+            : Promise.resolve();
     }
 }

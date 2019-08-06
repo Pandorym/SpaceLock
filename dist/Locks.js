@@ -12,10 +12,13 @@ class Locks {
         return _lock;
     }
     unlock(key) {
-        this.locked.find((x) => x.key === key).unlock();
+        this.locked.splice(this.locked.findIndex((x) => x.key === key), 1)[0].unlock();
     }
     wait(key) {
-        return this.locked.find((x) => x.key === key).wait();
+        let lock = this.locked.find((x) => x.key === key);
+        return lock !== undefined
+            ? lock.wait()
+            : Promise.resolve();
     }
 }
 exports.Locks = Locks;

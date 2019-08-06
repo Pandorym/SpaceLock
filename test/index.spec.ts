@@ -39,4 +39,10 @@ describe('Locks', function() {
 
         locks.unlock('KEY3');
     });
+
+    it('should passed, when dont has lock', function(done) {
+        locks
+            .wait('KEY4')
+            .then(done);
+    });
 });
