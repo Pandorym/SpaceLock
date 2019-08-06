@@ -20,6 +20,21 @@ class Locks {
             ? lock.wait()
             : Promise.resolve();
     }
+    waitAndLock(key) {
+        return this
+            .wait(key)
+            .then(() => this.lock(key));
+    }
+    waitAndLockOnce(key, function1) {
+        let result;
+        return this
+            .waitAndLock(key)
+            .then(async () => {
+            result = await function1();
+        })
+            .then(() => this.unlock(key))
+            .then(() => result);
+    }
 }
 exports.Locks = Locks;
 

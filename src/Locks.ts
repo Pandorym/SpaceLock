@@ -28,4 +28,21 @@ export class Locks {
             ? lock.wait()
             : Promise.resolve();
     }
+
+    public waitAndLock(key: string): Promise<Lock> {
+        return this
+            .wait(key)
+            .then(() => this.lock(key));
+    }
+
+    public waitAndLockOnce(key: string, function1: any): Promise<any> {
+        let result: any;
+        return this
+            .waitAndLock(key)
+            .then(async () => {
+                result = await function1();
+            })
+            .then(() => this.unlock(key))
+            .then(() => result);
+    }
 }

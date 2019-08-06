@@ -17,7 +17,7 @@ describe('Locks', function() {
         locks.lock('KEY2');
         locks.wait('KEY2')
              .then(() => {
-                 equal(false, true);
+                 done('passed');
              });
 
         setTimeout(done, 2000);
@@ -27,10 +27,7 @@ describe('Locks', function() {
         locks.lock('KEY3');
         locks.wait('KEY3')
              .then(() => {
-                 // do some thing
-                 return new Promise((resolve) => {
-                     setTimeout(resolve, 2000);
-                 });
+                 // to do some thing
              })
              .then(() => {
                  equal(true, true);
@@ -44,5 +41,47 @@ describe('Locks', function() {
         locks
             .wait('KEY4')
             .then(done);
+    });
+
+    it('should lock, when waitAndLock', function(done) {
+        locks
+            .waitAndLock('KEY5')
+            .then(() => {
+                equal(true, true);
+
+                locks
+                    .wait('KEY5')
+                    .then(() => {
+                        done('passed');
+                    });
+            });
+
+        setTimeout(done, 2000);
+    });
+
+
+    it('should passed, after waitAndLockOnce ', function(done) {
+        locks
+            .waitAndLockOnce('KEY6', async () => {
+                // To do something
+            })
+            .then(() => {
+                locks
+                    .wait('KEY6')
+                    .then(() => {
+                        done();
+                    });
+            });
+    });
+
+    it('should return 1 + 1 = 2, after waitAndLockOnce ', function(done) {
+        locks
+            .waitAndLockOnce('KEY6', async () => {
+                return 1 + 1;
+            })
+            .then((result) => {
+                equal(result, 2);
+                done();
+            });
     });
 });
