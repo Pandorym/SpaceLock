@@ -13,6 +13,11 @@ describe('Locks', function() {
         equal(lock.key, 'KEY1');
     });
 
+    it('should can get lock', function() {
+        let lock = locks.get('KEY1');
+        equal(lock.key, 'KEY1');
+    });
+
     it('should has lock', (done) => {
         locks.lock('KEY2');
         locks.wait('KEY2')
@@ -20,7 +25,13 @@ describe('Locks', function() {
                  done('passed');
              });
 
-        setTimeout(done, 2000);
+        try {
+            equal(locks.get('KEY2').isLocked, true);
+            done();
+        }
+        catch (e) {
+            done(e);
+        }
     });
 
     it('should can unlock', function(done) {
@@ -113,7 +124,7 @@ describe('Locks', function() {
                 setTimeout(() => {
                     try {
                         equal(last, 2);
-                        done()
+                        done();
                     }
                     catch (e) {
                         done(e);
@@ -124,5 +135,54 @@ describe('Locks', function() {
                 }, 100);
             });
         });
+    });
+
+    it('should one by one, when has multiple wait - 1000 times', function(done) {
+        let last = -1;
+
+        for (let i = 0; i <= 1000; i++) {
+            locks.waitAndLockOnce('KEY8', () => {
+                try {
+                    equal(last, i - 1);
+                }
+                catch (e) {
+                    done(e);
+                }
+                last = i;
+            });
+        }
+
+        locks.waitAndLockOnce('KEY8', () => {
+            equal(last, 1000);
+            done();
+        });
+    });
+
+
+    it('should one by one, when has multiple wait - 1000 times Promise', function(done) {
+        let last = -1;
+
+        for (let i = 0; i <= 1000; i++) {
+            locks.waitAndLockOnce('KEY8', () => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        try {
+                            equal(last, i - 1);
+                        }
+                        catch (e) {
+                            done(e);
+                        }
+                        last = i;
+                        resolve();
+                    }, 1);
+                });
+            });
+        }
+
+        locks.waitAndLockOnce('KEY8', () => {
+            equal(last, 1000);
+            done();
+        });
+
     });
 });

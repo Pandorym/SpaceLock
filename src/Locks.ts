@@ -31,6 +31,15 @@ export class Locks {
         lock.unlock();
     }
 
+    public get(key: string) {
+        return this.locked.find((x) => x.key === key);
+    }
+
+    public isLocked(key: string) {
+        let lock = this.get(key);
+        return lock !== undefined && lock.isLocked;
+    }
+
     public wait(key: string): Promise<void> {
         let lock = this.locked.find((x) => x.key === key);
 

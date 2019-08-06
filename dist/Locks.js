@@ -22,6 +22,13 @@ class Locks {
         let lock = this.locked[lockIndex];
         lock.unlock();
     }
+    get(key) {
+        return this.locked.find((x) => x.key === key);
+    }
+    isLocked(key) {
+        let lock = this.get(key);
+        return lock !== undefined && lock.isLocked;
+    }
     wait(key) {
         let lock = this.locked.find((x) => x.key === key);
         if (lock === undefined) {
