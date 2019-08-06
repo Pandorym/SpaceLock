@@ -6,7 +6,7 @@ describe('Locks', function() {
     (<any>this).timeout(10000);
     this.slow(15000);
 
-    let locks = new Locks();
+    let locks = new Locks(1);
 
     it('should has lock key', function() {
         let lock = locks.lock('KEY1');
@@ -30,7 +30,6 @@ describe('Locks', function() {
                  // to do some thing
              })
              .then(() => {
-                 equal(true, true);
                  done();
              });
 
@@ -76,12 +75,54 @@ describe('Locks', function() {
 
     it('should return 1 + 1 = 2, after waitAndLockOnce ', function(done) {
         locks
-            .waitAndLockOnce('KEY6', async () => {
+            .waitAndLockOnce('KEY7', async () => {
                 return 1 + 1;
             })
             .then((result) => {
                 equal(result, 2);
                 done();
             });
+    });
+
+    it('should one by one, when has multiple wait', function(done) {
+        let last = 0;
+        locks.waitAndLockOnce('KEY8', () => {
+            equal(last, 0);
+            last = 1;
+        });
+
+        locks.waitAndLockOnce('KEY8', () => {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    try {
+                        equal(last, 1);
+                    }
+                    catch (e) {
+                        done(e);
+                    }
+
+                    last = 2;
+                    resolve();
+                }, 500);
+            });
+        });
+
+
+        locks.waitAndLockOnce('KEY8', () => {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    try {
+                        equal(last, 2);
+                        done()
+                    }
+                    catch (e) {
+                        done(e);
+                    }
+
+                    last = 3;
+                    resolve();
+                }, 100);
+            });
+        });
     });
 });
