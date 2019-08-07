@@ -25,11 +25,13 @@ export class Lock {
     }
 
     public unlock() {
+        if (this.waitList.length === 0) {
+            this.isLocked = false;
+            return;
+        }
         for (let num = 0; num < this.gateWidth; num++) {
             if (this.waitList.length > 0) this.waitList.shift().go();
         }
-        if (this.waitList.length === 0)
-            this.isLocked = false;
     }
 
     public wait(): Promise<void> {

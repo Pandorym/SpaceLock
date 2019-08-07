@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Lock_1 = require("./Lock");
 class Locks {
-    constructor(gateWidth = null) {
+    constructor(gateWidth = 1) {
         this.locked = [];
         this.gateWidth = gateWidth;
     }

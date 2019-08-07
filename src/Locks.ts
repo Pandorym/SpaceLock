@@ -5,7 +5,7 @@ export class Locks {
 
     public gateWidth: number;
 
-    constructor(gateWidth: number = null) {
+    constructor(gateWidth: number = 1) {
         this.gateWidth = gateWidth;
     }
 
