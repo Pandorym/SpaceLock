@@ -1,18 +1,23 @@
-import { Lock } from './Lock';
+import { SpaceLock } from './SpaceLock';
 
-export class Locks {
-    public locked: Array<Lock> = [];
+export class Ymir {
+    public locked: Array<SpaceLock> = [];
 
-    public gateWidth: number;
+    public static defaultOptions = {
+        spaceSize : 1,
+    };
 
-    constructor(gateWidth: number = 1) {
-        this.gateWidth = gateWidth;
+    public options: any;
+
+    constructor(options?: any) {
+        this.options = Object.assign({}, Ymir.defaultOptions, options);
     }
 
-    public lock(key: string, gateWidth: number = this.gateWidth): Lock {
+    public lock(key: string, options: any = this.options): SpaceLock {
         let _lock = this.locked.find((x) => x.key === key);
+
         if (_lock === undefined) {
-            _lock = new Lock(key, gateWidth);
+            _lock = new SpaceLock(key, options);
             this.locked.push(_lock);
         }
 
@@ -44,23 +49,17 @@ export class Locks {
         let lock = this.locked.find((x) => x.key === key);
 
         if (lock === undefined) {
-            lock = new Lock(key, this.gateWidth);
+            lock = new SpaceLock(key, this.options);
             this.locked.push(lock);
         }
 
         return lock.wait();
     }
 
-    public waitAndLock(key: string): Promise<Lock> {
-        return this
-            .wait(key)
-            .then(() => this.lock(key));
-    }
-
     public waitAndLockOnce(key: string, function1: any): Promise<any> {
         let result: any;
         return this
-            .waitAndLock(key)
+            .wait(key)
             .then(async () => {
                 result = await function1();
             })

@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const Lock_1 = require("./Lock");
-class Locks {
-    constructor(gateWidth = 1) {
+const SpaceLock_1 = require("./SpaceLock");
+class Ymir {
+    constructor(options) {
         this.locked = [];
-        this.gateWidth = gateWidth;
+        this.options = Object.assign({}, Ymir.defaultOptions, options);
     }
-    lock(key, gateWidth = this.gateWidth) {
+    lock(key, options = this.options) {
         let _lock = this.locked.find((x) => x.key === key);
         if (_lock === undefined) {
-            _lock = new Lock_1.Lock(key, gateWidth);
+            _lock = new SpaceLock_1.SpaceLock(key, options);
             this.locked.push(_lock);
         }
         _lock.lock();
@@ -32,20 +32,15 @@ class Locks {
     wait(key) {
         let lock = this.locked.find((x) => x.key === key);
         if (lock === undefined) {
-            lock = new Lock_1.Lock(key, this.gateWidth);
+            lock = new SpaceLock_1.SpaceLock(key, this.options);
             this.locked.push(lock);
         }
         return lock.wait();
     }
-    waitAndLock(key) {
-        return this
-            .wait(key)
-            .then(() => this.lock(key));
-    }
     waitAndLockOnce(key, function1) {
         let result;
         return this
-            .waitAndLock(key)
+            .wait(key)
             .then(async () => {
             result = await function1();
         })
@@ -53,6 +48,9 @@ class Locks {
             .then(() => result);
     }
 }
-exports.Locks = Locks;
+Ymir.defaultOptions = {
+    spaceSize: 1,
+};
+exports.Ymir = Ymir;
 
-//# sourceMappingURL=Locks.js.map
+//# sourceMappingURL=Ymir.js.map

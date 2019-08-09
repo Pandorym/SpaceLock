@@ -1,12 +1,12 @@
 import { equal } from 'assert';
-import { Locks } from '../src/Locks';
+import { Ymir } from '../src/Ymir';
 
 describe('Locks', function() {
 
     (<any>this).timeout(10000);
     this.slow(15000);
 
-    let locks = new Locks(1);
+    let locks = new Ymir();
 
     it('should has lock key', function() {
         let lock = locks.lock('KEY1');
@@ -55,7 +55,7 @@ describe('Locks', function() {
 
     it('should lock, when waitAndLock', function(done) {
         locks
-            .waitAndLock('KEY5')
+            .wait('KEY5')
             .then(() => {
                 equal(true, true);
 
