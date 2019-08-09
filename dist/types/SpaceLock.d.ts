@@ -12,10 +12,10 @@ export declare class SpaceLock {
     };
     readonly isFull: boolean;
     readonly isLocked: boolean;
-    readonly hasWait: boolean;
+    readonly hasTask: boolean;
     constructor(key: string, options?: any);
     update(): void;
-    lock(): void;
-    unlock(): void;
-    wait(): Promise<void>;
+    checkOut(): void;
+    checkIn(): Promise<void>;
+    doOnce(func: any): Promise<any>;
 }

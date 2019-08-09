@@ -13,57 +13,35 @@ export class Ymir {
         this.options = Object.assign({}, Ymir.defaultOptions, options);
     }
 
-    public lock(key: string, options: any = this.options): SpaceLock {
-        let _lock = this.locked.find((x) => x.key === key);
+    public getSpaceLock(key: string, spaceLockOptions: any = this.options): SpaceLock {
+        let spaceLock = this.locked.find((x) => x.key === key);
 
-        if (_lock === undefined) {
-            _lock = new SpaceLock(key, options);
-            this.locked.push(_lock);
+        if (spaceLock === undefined) {
+            spaceLock = new SpaceLock(key, spaceLockOptions);
+            this.locked.push(spaceLock);
         }
 
-        _lock.lock();
-        return _lock;
+        return spaceLock;
     }
 
-    public unlock(key: string) {
-
-        let lockIndex = this.locked.findIndex((x) => x.key === key);
-
-        if (lockIndex === -1) return;
-
-        let lock = this.locked[lockIndex];
-
-        lock.unlock();
+    public checkIn(key: string) {
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.checkIn();
     }
 
-    public get(key: string) {
-        return this.locked.find((x) => x.key === key);
+    public checkOut(key: string) {
+        let spaceLock = this.getSpaceLock(key);
+
+        spaceLock.checkOut();
+    }
+
+    public doOnce(key: string, func: any) {
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.doOnce(func);
     }
 
     public isLocked(key: string) {
-        let lock = this.get(key);
-        return lock !== undefined && lock.isLocked;
-    }
-
-    public wait(key: string): Promise<void> {
-        let lock = this.locked.find((x) => x.key === key);
-
-        if (lock === undefined) {
-            lock = new SpaceLock(key, this.options);
-            this.locked.push(lock);
-        }
-
-        return lock.wait();
-    }
-
-    public waitAndLockOnce(key: string, function1: any): Promise<any> {
-        let result: any;
-        return this
-            .wait(key)
-            .then(async () => {
-                result = await function1();
-            })
-            .then(() => this.unlock(key))
-            .then(() => result);
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.isLocked;
     }
 }

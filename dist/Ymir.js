@@ -6,46 +6,29 @@ class Ymir {
         this.locked = [];
         this.options = Object.assign({}, Ymir.defaultOptions, options);
     }
-    lock(key, options = this.options) {
-        let _lock = this.locked.find((x) => x.key === key);
-        if (_lock === undefined) {
-            _lock = new SpaceLock_1.SpaceLock(key, options);
-            this.locked.push(_lock);
+    getSpaceLock(key, spaceLockOptions = this.options) {
+        let spaceLock = this.locked.find((x) => x.key === key);
+        if (spaceLock === undefined) {
+            spaceLock = new SpaceLock_1.SpaceLock(key, spaceLockOptions);
+            this.locked.push(spaceLock);
         }
-        _lock.lock();
-        return _lock;
+        return spaceLock;
     }
-    unlock(key) {
-        let lockIndex = this.locked.findIndex((x) => x.key === key);
-        if (lockIndex === -1)
-            return;
-        let lock = this.locked[lockIndex];
-        lock.unlock();
+    checkIn(key) {
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.checkIn();
     }
-    get(key) {
-        return this.locked.find((x) => x.key === key);
+    checkOut(key) {
+        let spaceLock = this.getSpaceLock(key);
+        spaceLock.checkOut();
+    }
+    doOnce(key, func) {
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.doOnce(func);
     }
     isLocked(key) {
-        let lock = this.get(key);
-        return lock !== undefined && lock.isLocked;
-    }
-    wait(key) {
-        let lock = this.locked.find((x) => x.key === key);
-        if (lock === undefined) {
-            lock = new SpaceLock_1.SpaceLock(key, this.options);
-            this.locked.push(lock);
-        }
-        return lock.wait();
-    }
-    waitAndLockOnce(key, function1) {
-        let result;
-        return this
-            .wait(key)
-            .then(async () => {
-            result = await function1();
-        })
-            .then(() => this.unlock(key))
-            .then(() => result);
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.isLocked;
     }
 }
 Ymir.defaultOptions = {

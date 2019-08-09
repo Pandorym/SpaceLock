@@ -6,10 +6,9 @@ export declare class Ymir {
     };
     options: any;
     constructor(options?: any);
-    lock(key: string, options?: any): SpaceLock;
-    unlock(key: string): void;
-    get(key: string): SpaceLock;
+    getSpaceLock(key: string, spaceLockOptions?: any): SpaceLock;
+    checkIn(key: string): Promise<void>;
+    checkOut(key: string): void;
+    doOnce(key: string, func: any): Promise<any>;
     isLocked(key: string): boolean;
-    wait(key: string): Promise<void>;
-    waitAndLockOnce(key: string, function1: any): Promise<any>;
 }

@@ -22,7 +22,7 @@ export class SpaceLock {
         return this.isFull;
     }
 
-    public get hasWait() {
+    public get hasTask() {
         return this.TaskQueue.length > 0;
     }
 
@@ -38,33 +38,43 @@ export class SpaceLock {
     }
 
     public update() {
-        for (; !this.isFull && this.hasWait; this.currentNumber++) {
+        for (; !this.isFull && this.hasTask;) {
             this.TaskQueue.shift().go();
         }
     }
 
-    public lock() {
-        this.currentNumber++;
-    }
-
-    public unlock() {
+    public checkOut() {
         this.currentNumber--;
         this.update();
     }
 
-    public wait(): Promise<void> {
-        let wait: any = {
+    public checkIn(): Promise<void> {
+        let task: any = {
             go : null,
             token : null,
         };
 
-        wait.token = new Promise((resolve) => {
-            wait.go = resolve;
+        task.token = new Promise((resolve) => {
+            task.go = () => {
+                this.currentNumber++;
+                resolve();
+            };
         });
-        this.TaskQueue.push(wait);
+        this.TaskQueue.push(task);
 
         this.update();
 
-        return wait.token;
+        return task.token;
+    }
+
+    public doOnce(func: any): Promise<any> {
+        let result: any;
+        return this
+            .checkIn()
+            .then(async () => {
+                result = await func();
+            })
+            .then(() => this.checkOut())
+            .then(() => result);
     }
 }

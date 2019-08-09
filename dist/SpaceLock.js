@@ -14,32 +14,42 @@ class SpaceLock {
     get isLocked() {
         return this.isFull;
     }
-    get hasWait() {
+    get hasTask() {
         return this.TaskQueue.length > 0;
     }
     update() {
-        for (; !this.isFull && this.hasWait; this.currentNumber++) {
+        for (; !this.isFull && this.hasTask;) {
             this.TaskQueue.shift().go();
         }
     }
-    lock() {
-        this.currentNumber++;
-    }
-    unlock() {
+    checkOut() {
         this.currentNumber--;
         this.update();
     }
-    wait() {
-        let wait = {
+    checkIn() {
+        let task = {
             go: null,
             token: null,
         };
-        wait.token = new Promise((resolve) => {
-            wait.go = resolve;
+        task.token = new Promise((resolve) => {
+            task.go = () => {
+                this.currentNumber++;
+                resolve();
+            };
         });
-        this.TaskQueue.push(wait);
+        this.TaskQueue.push(task);
         this.update();
-        return wait.token;
+        return task.token;
+    }
+    doOnce(func) {
+        let result;
+        return this
+            .checkIn()
+            .then(async () => {
+            result = await func();
+        })
+            .then(() => this.checkOut())
+            .then(() => result);
     }
 }
 SpaceLock.defaultOptions = {
