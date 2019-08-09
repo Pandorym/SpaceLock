@@ -1,4 +1,4 @@
 console.log('Halo, HM.');
 
-export { Locks } from './Locks';
-export { Lock } from './Lock';
+export { Ymir } from './Ymir';
+export { SpaceLock } from './SpaceLock';

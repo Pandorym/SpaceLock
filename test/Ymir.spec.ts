@@ -1,32 +1,31 @@
 import { equal } from 'assert';
-import { Locks } from '../src/Locks';
+import { Ymir } from '../src';
 
-describe('Locks', function() {
+describe('Ymir - default options', function() {
 
-    (<any>this).timeout(10000);
-    this.slow(15000);
+    let ymir = new Ymir();
 
-    let locks = new Locks(1);
-
-    it('should has lock key', function() {
-        let lock = locks.lock('KEY1');
-        equal(lock.key, 'KEY1');
+    it('should can create spaceLock', function() {
+        ymir.getSpaceLock('KEY1');
+        equal(ymir.getSpaceLock('KEY1').key, 'KEY1');
+        equal(ymir.getSpaceLock('KEY1').spaceSize, 1);
+        equal(ymir.getSpaceLock('KEY1').currentNumber, 0);
+        equal(ymir.getSpaceLock('KEY1').TaskQueue.length, 0);
     });
 
-    it('should can get lock', function() {
-        let lock = locks.get('KEY1');
-        equal(lock.key, 'KEY1');
+
+    it(`should can checkIn, when there's no one in it.`, (done) => {
+        ymir.getSpaceLock('KEY2').checkIn()
+            .then(() => {
+                done();
+            });
     });
 
-    it('should has lock', (done) => {
-        locks.lock('KEY2');
-        locks.wait('KEY2')
-             .then(() => {
-                 done('passed');
-             });
+    it(`should isFull = true, when there's 1 in there.`, (done) => {
+        ymir.checkIn('KEY3');
 
         try {
-            equal(locks.get('KEY2').isLocked, true);
+            equal(ymir.isFull('KEY3'), true);
             done();
         }
         catch (e) {
@@ -34,59 +33,56 @@ describe('Locks', function() {
         }
     });
 
-    it('should can unlock', function(done) {
-        locks.lock('KEY3');
-        locks.wait('KEY3')
-             .then(() => {
-                 // to do some thing
-             })
-             .then(() => {
-                 done();
-             });
+    it(`should isLocked = true, when there's 1 in there.`, (done) => {
+        ymir.checkIn('KEY4');
 
-        locks.unlock('KEY3');
+        try {
+            equal(ymir.isLocked('KEY4'), true);
+            done();
+        }
+        catch (e) {
+            done(e);
+        }
     });
 
-    it('should passed, when dont has lock', function(done) {
-        locks
-            .wait('KEY4')
-            .then(done);
-    });
 
-    it('should lock, when waitAndLock', function(done) {
-        locks
-            .waitAndLock('KEY5')
+    it(`should dont checkIn, when there's 1 in there.`, (done) => {
+        ymir.checkIn('KEY5');
+        ymir.checkIn('KEY5')
             .then(() => {
-                equal(true, true);
-
-                locks
-                    .wait('KEY5')
-                    .then(() => {
-                        done('passed');
-                    });
+                done('passed');
             });
+        done();
+    });
 
-        setTimeout(done, 2000);
+    it(`should can checkIn, when there's 1 in there, And then leave.`, (done) => {
+        ymir.checkIn('KEY6')
+            .then(() => {
+                ymir.checkOut('KEY6');
+            });
+        ymir.checkIn('KEY6')
+            .then(() => {
+                done();
+            });
     });
 
 
-    it('should passed, after waitAndLockOnce ', function(done) {
-        locks
-            .waitAndLockOnce('KEY6', async () => {
+    it(`should can checkIn, after doOnce`, (done) => {
+        ymir
+            .doOnce('KEY7', async () => {
                 // To do something
             })
             .then(() => {
-                locks
-                    .wait('KEY6')
+                ymir.checkIn('KEY7')
                     .then(() => {
                         done();
                     });
             });
     });
 
-    it('should return 1 + 1 = 2, after waitAndLockOnce ', function(done) {
-        locks
-            .waitAndLockOnce('KEY7', async () => {
+    it(`should return 1 + 1 = 2, after doOnce`, (done) => {
+        ymir
+            .doOnce('KEY8', async () => {
                 return 1 + 1;
             })
             .then((result) => {
@@ -95,14 +91,16 @@ describe('Locks', function() {
             });
     });
 
-    it('should one by one, when has multiple wait', function(done) {
+
+    it(`should one by one, when has multiple wait`, (done) => {
         let last = 0;
-        locks.waitAndLockOnce('KEY8', () => {
+
+        ymir.doOnce('KEY9', () => {
             equal(last, 0);
             last = 1;
         });
 
-        locks.waitAndLockOnce('KEY8', () => {
+        ymir.doOnce('KEY9', () => {
             return new Promise(resolve => {
                 setTimeout(() => {
                     try {
@@ -119,7 +117,7 @@ describe('Locks', function() {
         });
 
 
-        locks.waitAndLockOnce('KEY8', () => {
+        ymir.doOnce('KEY9', () => {
             return new Promise(resolve => {
                 setTimeout(() => {
                     try {
@@ -139,9 +137,8 @@ describe('Locks', function() {
 
     it('should one by one, when has multiple wait - 1000 times', function(done) {
         let last = -1;
-
         for (let i = 0; i <= 1000; i++) {
-            locks.waitAndLockOnce('KEY8', () => {
+            ymir.doOnce('KEY10', () => {
                 try {
                     equal(last, i - 1);
                 }
@@ -152,7 +149,7 @@ describe('Locks', function() {
             });
         }
 
-        locks.waitAndLockOnce('KEY8', () => {
+        ymir.doOnce('KEY10', () => {
             equal(last, 1000);
             done();
         });
@@ -163,7 +160,7 @@ describe('Locks', function() {
         let last = -1;
 
         for (let i = 0; i <= 1000; i++) {
-            locks.waitAndLockOnce('KEY8', () => {
+            ymir.doOnce('KEY11', () => {
                 return new Promise(resolve => {
                     setTimeout(() => {
                         try {
@@ -179,7 +176,7 @@ describe('Locks', function() {
             });
         }
 
-        locks.waitAndLockOnce('KEY8', () => {
+        ymir.doOnce('KEY11', () => {
             equal(last, 1000);
             done();
         });
