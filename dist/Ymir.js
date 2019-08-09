@@ -3,14 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const SpaceLock_1 = require("./SpaceLock");
 class Ymir {
     constructor(options) {
-        this.locked = [];
+        this.spaceLocks = [];
         this.options = Object.assign({}, Ymir.defaultOptions, options);
     }
     getSpaceLock(key, spaceLockOptions = this.options) {
-        let spaceLock = this.locked.find((x) => x.key === key);
+        let spaceLock = this.spaceLocks.find((x) => x.key === key);
         if (spaceLock === undefined) {
             spaceLock = new SpaceLock_1.SpaceLock(key, spaceLockOptions);
-            this.locked.push(spaceLock);
+            this.spaceLocks.push(spaceLock);
         }
         return spaceLock;
     }
@@ -29,6 +29,10 @@ class Ymir {
     isLocked(key) {
         let spaceLock = this.getSpaceLock(key);
         return spaceLock.isLocked;
+    }
+    isFull(key) {
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.isFull;
     }
 }
 Ymir.defaultOptions = {

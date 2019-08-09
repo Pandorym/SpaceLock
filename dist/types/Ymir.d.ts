@@ -1,6 +1,6 @@
 import { SpaceLock } from './SpaceLock';
 export declare class Ymir {
-    locked: Array<SpaceLock>;
+    spaceLocks: Array<SpaceLock>;
     static defaultOptions: {
         spaceSize: number;
     };
@@ -11,4 +11,5 @@ export declare class Ymir {
     checkOut(key: string): void;
     doOnce(key: string, func: any): Promise<any>;
     isLocked(key: string): boolean;
+    isFull(key: string): boolean;
 }

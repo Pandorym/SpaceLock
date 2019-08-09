@@ -1,7 +1,7 @@
 import { SpaceLock } from './SpaceLock';
 
 export class Ymir {
-    public locked: Array<SpaceLock> = [];
+    public spaceLocks: Array<SpaceLock> = [];
 
     public static defaultOptions = {
         spaceSize : 1,
@@ -14,11 +14,11 @@ export class Ymir {
     }
 
     public getSpaceLock(key: string, spaceLockOptions: any = this.options): SpaceLock {
-        let spaceLock = this.locked.find((x) => x.key === key);
+        let spaceLock = this.spaceLocks.find((x) => x.key === key);
 
         if (spaceLock === undefined) {
             spaceLock = new SpaceLock(key, spaceLockOptions);
-            this.locked.push(spaceLock);
+            this.spaceLocks.push(spaceLock);
         }
 
         return spaceLock;
@@ -43,5 +43,10 @@ export class Ymir {
     public isLocked(key: string) {
         let spaceLock = this.getSpaceLock(key);
         return spaceLock.isLocked;
+    }
+
+    public isFull(key: string) {
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.isFull;
     }
 }
