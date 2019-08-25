@@ -1,21 +1,23 @@
+import { Task } from './Task';
 export declare class SpaceLock {
     key: string;
     private _;
     spaceSize: number;
-    currentNumber: number;
-    TaskQueue: Array<{
-        go: any;
-        token: Promise<void>;
-    }>;
+    timeout: number;
+    waitTaskQueue: Array<Task>;
+    insideTaskQueue: Array<Task>;
+    readonly currentNumber: number;
     static defaultOptions: {
         spaceSize: number;
+        timeout: number;
     };
     readonly isFull: boolean;
     readonly isLocked: boolean;
-    readonly hasTask: boolean;
+    readonly hasWaitTask: boolean;
     constructor(key: string, options?: any);
     update(): void;
-    checkOut(): void;
-    checkIn(): Promise<void>;
-    doOnce(func: any): Promise<any>;
+    checkOut(task_key?: string): void;
+    checkIn(task: Task): Promise<void>;
+    checkIn(task_key?: string, func?: any): Promise<void>;
+    doOnce(func: any, timeout?: number): Promise<any>;
 }

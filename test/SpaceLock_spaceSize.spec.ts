@@ -8,7 +8,7 @@ describe('SpaceLock - options: spaceSize', function() {
         equal(spaceLock.key, 'KEY1');
         equal(spaceLock.spaceSize, 20);
         equal(spaceLock.currentNumber, 0);
-        equal(spaceLock.TaskQueue.length, 0);
+        equal(spaceLock.waitTaskQueue.length, 0);
     });
 
     it('should one by one, when More than spaceSize, And has multiple wait - 1000 times.', function(done) {

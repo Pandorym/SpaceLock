@@ -10,7 +10,7 @@ describe('Ymir - default options', function() {
         equal(ymir.getSpaceLock('KEY1').key, 'KEY1');
         equal(ymir.getSpaceLock('KEY1').spaceSize, 1);
         equal(ymir.getSpaceLock('KEY1').currentNumber, 0);
-        equal(ymir.getSpaceLock('KEY1').TaskQueue.length, 0);
+        equal(ymir.getSpaceLock('KEY1').waitTaskQueue.length, 0);
     });
 
 

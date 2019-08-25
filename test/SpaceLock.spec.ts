@@ -8,7 +8,7 @@ describe('SpaceLock - default options', function() {
         equal(spaceLock.key, 'KEY1');
         equal(spaceLock.spaceSize, 1);
         equal(spaceLock.currentNumber, 0);
-        equal(spaceLock.TaskQueue.length, 0);
+        equal(spaceLock.waitTaskQueue.length, 0);
     });
 
 
@@ -190,6 +190,44 @@ describe('SpaceLock - default options', function() {
             equal(last, 1000);
             done();
         });
+
+    });
+
+    it('should throw reject, when doOnce timeout', function(done) {
+        let spaceLock = new SpaceLock('KEY11');
+
+        spaceLock
+            .doOnce(() => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 2000);
+                });
+            }, 500)
+            .then(() => {
+                done('into then');
+            })
+            .catch(done);
+
+    });
+
+    it('should into then, when doOnce not timeout', function(done) {
+        let spaceLock = new SpaceLock('KEY11');
+
+        spaceLock
+            .doOnce(() => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 500);
+                });
+            }, 1500)
+            .then(() => {
+                done();
+            })
+            .catch(() => {
+                done('into catch');
+            });
 
     });
 });
