@@ -194,7 +194,7 @@ describe('SpaceLock - default options', function() {
     });
 
     it('should throw reject, when doOnce timeout', function(done) {
-        let spaceLock = new SpaceLock('KEY11');
+        let spaceLock = new SpaceLock('KEY12');
 
         spaceLock
             .doOnce(() => {
@@ -212,7 +212,7 @@ describe('SpaceLock - default options', function() {
     });
 
     it('should into then, when doOnce not timeout', function(done) {
-        let spaceLock = new SpaceLock('KEY11');
+        let spaceLock = new SpaceLock('KEY13');
 
         spaceLock
             .doOnce(() => {
@@ -227,6 +227,57 @@ describe('SpaceLock - default options', function() {
             })
             .catch(() => {
                 done('into catch');
+            });
+
+    });
+
+    it('should try again and again, until one done', function(done) {
+        let spaceLock = new SpaceLock('KEY14');
+
+        let canDone = false;
+
+        setTimeout(() => {
+            canDone = true;
+        }, 1100);
+
+        spaceLock
+            .doOnce_untilOneDone(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        if (canDone) resolve();
+                        else reject();
+                    }, 200);
+                });
+            })
+            .then(() => {
+                done();
+            })
+            .catch(() => {
+                done('into catch');
+            });
+
+    });
+
+    it('should try again and again, until one done, with timeout option', function(done) {
+        let spaceLock = new SpaceLock('KEY15');
+
+        let takeTime = [500, 400, 200];
+        let num = 0;
+
+        spaceLock
+            .doOnce_untilOneDone(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, takeTime[num++]);
+                });
+            }, 300)
+            .then(() => {
+                equal(num, 2 + 1);
+                done();
+            })
+            .catch((err) => {
+                done('into catch: ' + err);
             });
 
     });

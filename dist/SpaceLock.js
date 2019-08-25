@@ -59,7 +59,15 @@ class SpaceLock {
             result = await task.exec();
         })
             .then(() => this.checkOut())
-            .then(() => result);
+            .then(() => result)
+            .catch((err) => {
+            this.checkOut();
+            throw err;
+        });
+    }
+    doOnce_untilOneDone(func, timeout = this.timeout) {
+        return this.doOnce(func, timeout)
+            .catch(() => this.doOnce_untilOneDone(func, timeout));
     }
 }
 SpaceLock.defaultOptions = {

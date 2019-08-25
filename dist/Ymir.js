@@ -22,9 +22,13 @@ class Ymir {
         let spaceLock = this.getSpaceLock(key);
         spaceLock.checkOut();
     }
-    doOnce(key, func) {
+    doOnce(key, func, timeout = this.options.timeout) {
         let spaceLock = this.getSpaceLock(key);
-        return spaceLock.doOnce(func);
+        return spaceLock.doOnce(func, timeout);
+    }
+    doOnce_untilOneDone(key, func, timeout = this.options.timeout) {
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.doOnce_untilOneDone(func, timeout);
     }
     isLocked(key) {
         let spaceLock = this.getSpaceLock(key);
@@ -37,6 +41,7 @@ class Ymir {
 }
 Ymir.defaultOptions = {
     spaceSize: 1,
+    timeout: null,
 };
 exports.Ymir = Ymir;
 
