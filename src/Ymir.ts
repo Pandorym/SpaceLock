@@ -3,8 +3,9 @@ import { SpaceLock } from './SpaceLock';
 export class Ymir {
     public spaceLocks: Array<SpaceLock> = [];
 
-    public static defaultOptions = {
+    public static defaultOptions: { spaceSize: number, timeout: number } = {
         spaceSize : 1,
+        timeout : null,
     };
 
     public options: any;
@@ -35,9 +36,14 @@ export class Ymir {
         spaceLock.checkOut();
     }
 
-    public doOnce(key: string, func: any) {
+    public doOnce(key: string, func: any, timeout: number = this.options.timeout) {
         let spaceLock = this.getSpaceLock(key);
-        return spaceLock.doOnce(func);
+        return spaceLock.doOnce(func, timeout);
+    }
+
+    public doOnce_untilOneDone(key: string, func: any, timeout: number = this.options.timeout) {
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.doOnce_untilOneDone(func, timeout);
     }
 
     public isLocked(key: string) {

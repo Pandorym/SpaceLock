@@ -10,7 +10,7 @@ describe('Ymir - default options', function() {
         equal(ymir.getSpaceLock('KEY1').key, 'KEY1');
         equal(ymir.getSpaceLock('KEY1').spaceSize, 1);
         equal(ymir.getSpaceLock('KEY1').currentNumber, 0);
-        equal(ymir.getSpaceLock('KEY1').TaskQueue.length, 0);
+        equal(ymir.getSpaceLock('KEY1').waitTaskQueue.length, 0);
     });
 
 
@@ -180,6 +180,87 @@ describe('Ymir - default options', function() {
             equal(last, 1000);
             done();
         });
+
+    });
+
+    it('should throw reject, when doOnce timeout', function(done) {
+        ymir
+            .doOnce('KEY12', () => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 2000);
+                });
+            }, 500)
+            .then(() => {
+                done('into then');
+            })
+            .catch(done);
+
+    });
+
+    it('should into then, when doOnce not timeout', function(done) {
+        ymir
+            .doOnce('KEY13', () => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 500);
+                });
+            }, 1500)
+            .then(() => {
+                done();
+            })
+            .catch(() => {
+                done('into catch');
+            });
+
+    });
+
+    it('should try again and again, until one done', function(done) {
+        let canDone = false;
+
+        setTimeout(() => {
+            canDone = true;
+        }, 1100);
+
+        ymir
+            .doOnce_untilOneDone('KEY14', () => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        if (canDone) resolve();
+                        else reject();
+                    }, 200);
+                });
+            })
+            .then(() => {
+                done();
+            })
+            .catch(() => {
+                done('into catch');
+            });
+
+    });
+
+    it('should try again and again, until one done, with timeout option', function(done) {
+        let takeTime = [500, 400, 200];
+        let num = 0;
+
+        ymir
+            .doOnce_untilOneDone('KEY15', () => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, takeTime[num++]);
+                });
+            }, 300)
+            .then(() => {
+                equal(num, 2 + 1);
+                done();
+            })
+            .catch((err) => {
+                done('into catch: ' + err);
+            });
 
     });
 });

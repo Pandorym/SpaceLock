@@ -1,59 +1,78 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const Task_1 = require("./Task");
 class SpaceLock {
     constructor(key, options) {
         let _options = Object.assign({}, SpaceLock.defaultOptions, options);
         this.spaceSize = _options.spaceSize;
+        this.timeout = _options.timeout;
         this.key = key;
-        this.TaskQueue = [];
-        this.currentNumber = 0;
+        this.waitTaskQueue = [];
+        this.insideTaskQueue = [];
     }
+    get currentNumber() {
+        return this.insideTaskQueue.length;
+    }
+    ;
     get isFull() {
         return !(this.currentNumber < this.spaceSize);
     }
     get isLocked() {
         return this.isFull;
     }
-    get hasTask() {
-        return this.TaskQueue.length > 0;
+    get hasWaitTask() {
+        return this.waitTaskQueue.length > 0;
     }
     update() {
-        for (; !this.isFull && this.hasTask;) {
-            this.TaskQueue.shift().go();
+        for (; !this.isFull && this.hasWaitTask;) {
+            let task = this.waitTaskQueue.shift();
+            task.checkIn();
+            this.insideTaskQueue.push(task);
         }
     }
-    checkOut() {
-        this.currentNumber--;
+    checkOut(task_key) {
+        let taskIndex = this.insideTaskQueue.findIndex((x) => x.key === task_key);
+        this.insideTaskQueue.splice(taskIndex, 1);
         this.update();
     }
-    checkIn() {
-        let task = {
-            go: null,
-            token: null,
-        };
-        task.token = new Promise((resolve) => {
-            task.go = () => {
-                this.currentNumber++;
-                resolve();
-            };
-        });
-        this.TaskQueue.push(task);
+    checkIn(x, y) {
+        let _task;
+        if (typeof x === 'object') {
+            _task = x;
+        }
+        else {
+            _task = new Task_1.Task(x, y);
+        }
+        this.waitTaskQueue.push(_task);
         this.update();
-        return task.token;
+        return _task.token;
     }
-    doOnce(func) {
+    doOnce(func, timeout = this.timeout) {
         let result;
+        let task = new Task_1.Task(undefined, func);
+        if (timeout !== null) {
+            setTimeout(() => { task.cancel(); }, timeout);
+        }
         return this
-            .checkIn()
+            .checkIn(task)
             .then(async () => {
-            result = await func();
+            result = await task.exec();
         })
             .then(() => this.checkOut())
-            .then(() => result);
+            .then(() => result)
+            .catch((err) => {
+            this.checkOut();
+            throw err;
+        });
+    }
+    doOnce_untilOneDone(func, timeout = this.timeout) {
+        return this.doOnce(func, timeout)
+            .catch(() => this.doOnce_untilOneDone(func, timeout));
     }
 }
 SpaceLock.defaultOptions = {
     spaceSize: 1,
+    timeout: null,
 };
 exports.SpaceLock = SpaceLock;
 

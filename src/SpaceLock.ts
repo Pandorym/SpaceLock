@@ -1,17 +1,22 @@
+import { Task } from './Task';
+
 export class SpaceLock {
     public key: string;
     private _: Promise<void>;
 
     public spaceSize: number;
+    public timeout: number;
 
-    public currentNumber: number;
-    public TaskQueue: Array<{
-        go: any,
-        token: Promise<void>
-    }>;
+    public waitTaskQueue: Array<Task>;
+    public insideTaskQueue: Array<Task>;
 
-    public static defaultOptions = {
+    public get currentNumber(): number {
+        return this.insideTaskQueue.length;
+    };
+
+    public static defaultOptions: { spaceSize: number, timeout: number } = {
         spaceSize : 1,
+        timeout : null,
     };
 
     public get isFull() {
@@ -22,8 +27,8 @@ export class SpaceLock {
         return this.isFull;
     }
 
-    public get hasTask() {
-        return this.TaskQueue.length > 0;
+    public get hasWaitTask() {
+        return this.waitTaskQueue.length > 0;
     }
 
     constructor(key: string, options?: any) {
@@ -31,50 +36,67 @@ export class SpaceLock {
         let _options = Object.assign({}, SpaceLock.defaultOptions, options);
 
         this.spaceSize = _options.spaceSize;
+        this.timeout = _options.timeout;
 
         this.key = key;
-        this.TaskQueue = [];
-        this.currentNumber = 0;
+        this.waitTaskQueue = [];
+        this.insideTaskQueue = [];
     }
 
     public update() {
-        for (; !this.isFull && this.hasTask;) {
-            this.TaskQueue.shift().go();
+        for (; !this.isFull && this.hasWaitTask;) {
+            let task = this.waitTaskQueue.shift();
+            task.checkIn();
+            this.insideTaskQueue.push(task);
         }
     }
 
-    public checkOut() {
-        this.currentNumber--;
+    public checkOut(task_key?: string) {
+        let taskIndex = this.insideTaskQueue.findIndex((x) => x.key === task_key);
+        this.insideTaskQueue.splice(taskIndex, 1);
+
         this.update();
     }
 
-    public checkIn(): Promise<void> {
-        let task: any = {
-            go : null,
-            token : null,
-        };
+    public checkIn(task: Task): Promise<void>
+    public checkIn(task_key?: string, func?: any): Promise<void>
+    public checkIn(x?: string | Task, y?: any): Promise<void> {
+        let _task;
+        if (typeof x === 'object') {
+            _task = x;
+        } else {
+            _task = new Task(x, y);
+        }
 
-        task.token = new Promise((resolve) => {
-            task.go = () => {
-                this.currentNumber++;
-                resolve();
-            };
-        });
-        this.TaskQueue.push(task);
+        this.waitTaskQueue.push(_task);
 
         this.update();
 
-        return task.token;
+        return _task.token;
     }
 
-    public doOnce(func: any): Promise<any> {
+    public doOnce(func: any, timeout: number = this.timeout): Promise<any> {
         let result: any;
+        let task = new Task(undefined, func);
+        if (timeout !== null) {
+            setTimeout(() => {task.cancel();}, timeout);
+        }
+
         return this
-            .checkIn()
+            .checkIn(task)
             .then(async () => {
-                result = await func();
+                result = await task.exec();
             })
             .then(() => this.checkOut())
-            .then(() => result);
+            .then(() => result)
+            .catch((err) => {
+                this.checkOut();
+                throw err;
+            });
+    }
+
+    public doOnce_untilOneDone(func: any, timeout: number = this.timeout): Promise<any> {
+        return this.doOnce(func, timeout)
+                   .catch(() => this.doOnce_untilOneDone(func, timeout));
     }
 }
