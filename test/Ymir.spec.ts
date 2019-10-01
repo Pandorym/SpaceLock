@@ -195,8 +195,8 @@ describe('Ymir - default options', function() {
             .then(() => {
                 done('into then');
             })
-            .catch(()=>{
-                done()
+            .catch(() => {
+                done();
             });
 
     });
@@ -244,24 +244,28 @@ describe('Ymir - default options', function() {
 
     });
 
-    it('should try again and again, until one done, with timeout option', function(done) {
-        let takeTime = [500, 400, 200];
-        let num = 0;
+    it('should try again and again, until one done, with timeout option - but never go to then', function(done) {
+        let canDone = false;
+        setTimeout(() => {
+            canDone = true;
+        }, 1100);
 
         ymir
             .doOnce_untilOneDone('KEY15', () => {
                 return new Promise((resolve) => {
+                    let num = 0;
                     setTimeout(() => {
-                        resolve();
-                    }, takeTime[num++]);
+                        resolve(num);
+                    }, canDone ? 200 : 500);
                 });
             }, 300)
+            // @ts-ignore
+            .timeout(1000)
             .then(() => {
-                equal(num, 2 + 1);
-                done();
+                done('into catch');
             })
-            .catch((err) => {
-                done('into catch: ' + err);
+            .catch(() => {
+                done();
             });
 
     });

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const bluebird_1 = require("bluebird");
 const Task_1 = require("./Task");
 class SpaceLock {
     constructor(key, options) {
@@ -65,12 +66,39 @@ class SpaceLock {
             .then(() => result)
             .catch((err) => {
             this.checkOut();
-            return Promise.reject(err);
+            return bluebird_1.Promise.reject(err);
         });
     }
     doOnce_untilOneDone(func, timeout = this.timeout) {
-        return this.doOnce(func, timeout)
-            .catch(() => this.doOnce_untilOneDone(func, timeout));
+        let result;
+        let task = new Task_1.Task(undefined, func);
+        return this
+            .checkIn(task)
+            .then(async () => {
+            let retry;
+            do {
+                retry = false;
+                try {
+                    if (timeout === null) {
+                        result = await task.exec();
+                    }
+                    else {
+                        result = await task.exec()
+                            .timeout(timeout);
+                    }
+                }
+                catch (e) {
+                    retry = true;
+                }
+            } while (retry);
+        })
+            .then(() => this.checkOut())
+            .then(() => result)
+            .catch((err) => {
+            console.log(err);
+            this.checkOut();
+            return bluebird_1.Promise.reject(err);
+        });
     }
 }
 SpaceLock.defaultOptions = {

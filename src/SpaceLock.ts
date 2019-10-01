@@ -1,3 +1,4 @@
+import { Promise } from 'bluebird';
 import { Task } from './Task';
 
 export class SpaceLock {
@@ -98,7 +99,34 @@ export class SpaceLock {
     }
 
     public doOnce_untilOneDone(func: any, timeout: number = this.timeout): Promise<any> {
-        return this.doOnce(func, timeout)
-                   .catch(() => this.doOnce_untilOneDone(func, timeout));
+        let result: any;
+        let task = new Task(undefined, func);
+
+        return this
+            .checkIn(task)
+            .then(async () => {
+                let retry: boolean;
+                do {
+                    retry = false;
+                    try {
+                        if (timeout === null) {
+                            result = await task.exec();
+                        } else {
+                            result = await task.exec()
+                                               .timeout(timeout);
+                        }
+                    }
+                    catch (e) {
+                        retry = true;
+                    }
+                } while (retry);
+            })
+            .then(() => this.checkOut())
+            .then(() => result)
+            .catch((err) => {
+                console.log(err);
+                this.checkOut();
+                return Promise.reject(err);
+            });
     }
 }
