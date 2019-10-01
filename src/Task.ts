@@ -1,3 +1,5 @@
+import { Promise } from 'bluebird';
+
 export class Task {
     public key: string;
     public status: 'wait' | 'inside' | 'leave';

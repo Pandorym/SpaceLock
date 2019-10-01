@@ -195,7 +195,9 @@ describe('Ymir - default options', function() {
             .then(() => {
                 done('into then');
             })
-            .catch(done);
+            .catch(()=>{
+                done()
+            });
 
     });
 

@@ -207,7 +207,9 @@ describe('SpaceLock - default options', function() {
             .then(() => {
                 done('into then');
             })
-            .catch(done);
+            .catch(() => {
+                done();
+            });
 
     });
 

@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const bluebird_1 = require("bluebird");
 class Task {
     set func(val) {
         this._func = () => {
-            return Promise.race([val(), new Promise((resolve, reject) => {
+            return bluebird_1.Promise.race([val(), new bluebird_1.Promise((resolve, reject) => {
                     this._func_cancel = reject;
                 })]);
         };
@@ -11,7 +12,7 @@ class Task {
     constructor(key, func_task) {
         this.key = key;
         this.status = 'wait';
-        this.token = new Promise((resolve, reject) => {
+        this.token = new bluebird_1.Promise((resolve, reject) => {
             this._token_resolve = resolve;
             this._token_reject = reject;
         });

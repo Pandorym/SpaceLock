@@ -78,20 +78,22 @@ export class SpaceLock {
     public doOnce(func: any, timeout: number = this.timeout): Promise<any> {
         let result: any;
         let task = new Task(undefined, func);
-        if (timeout !== null) {
-            setTimeout(() => {task.cancel();}, timeout);
-        }
 
         return this
             .checkIn(task)
             .then(async () => {
-                result = await task.exec();
+                if (timeout === null) {
+                    result = await task.exec();
+                } else {
+                    result = await task.exec()
+                                       .timeout(timeout);
+                }
             })
             .then(() => this.checkOut())
             .then(() => result)
             .catch((err) => {
                 this.checkOut();
-                throw err;
+                return Promise.reject(err);
             });
     }
 
