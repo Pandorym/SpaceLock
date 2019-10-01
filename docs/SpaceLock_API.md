@@ -58,6 +58,15 @@
 * `Return` (Promise<any>)
   任務函式的執行結果。
   
+### # spaceLock.doOnce_untilOneDone(func)
+`spaceLock.doOnce(func)` 的增強。
+
+將重複執行任務，直到 func 執行成功。（期間不會簽出空間）
+
+* `func` (function) 需要執行的任務函式。
+* `Return` (Promise<any>)
+  任務函式的執行結果。
+  
 
 ## class: Ymir
 方便快捷的操作 [`SpaceLock`](#class-spacelock) 类。

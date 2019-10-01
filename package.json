@@ -1,6 +1,6 @@
 {
   "name": "space-lock",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Lock asynchronous resources, uses native Promise. 🔒",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
