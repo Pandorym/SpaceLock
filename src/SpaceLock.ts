@@ -76,9 +76,9 @@ export class SpaceLock {
         return _task.token;
     }
 
-    public doOnce(func: any, timeout: number = this.timeout): Promise<any> {
+    public doOnce(func: any, timeout: number = this.timeout, task_key? :string): Promise<any> {
         let result: any;
-        let task = new Task(undefined, func);
+        let task = new Task(task_key, func);
 
         return this
             .checkIn(task)
@@ -90,10 +90,10 @@ export class SpaceLock {
                                        .timeout(timeout);
                 }
             })
-            .then(() => this.checkOut())
+            .then(() => this.checkOut(task_key))
             .then(() => result)
             .catch((err) => {
-                this.checkOut();
+                this.checkOut(task_key);
                 return Promise.reject(err);
             });
     }

@@ -36,9 +36,9 @@ export class Ymir {
         spaceLock.checkOut();
     }
 
-    public doOnce(key: string, func: any, timeout: number = this.options.timeout) {
+    public doOnce(key: string, func: any, timeout: number = this.options.timeout, task_key? :string) {
         let spaceLock = this.getSpaceLock(key);
-        return spaceLock.doOnce(func, timeout);
+        return spaceLock.doOnce(func, timeout, task_key);
     }
 
     public doOnce_untilOneDone(key: string, func: any, timeout: number = this.options.timeout) {

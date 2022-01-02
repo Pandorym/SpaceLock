@@ -48,9 +48,9 @@ class SpaceLock {
         this.update();
         return _task.token;
     }
-    doOnce(func, timeout = this.timeout) {
+    doOnce(func, timeout = this.timeout, task_key) {
         let result;
-        let task = new Task_1.Task(undefined, func);
+        let task = new Task_1.Task(task_key, func);
         return this
             .checkIn(task)
             .then(async () => {
@@ -62,10 +62,10 @@ class SpaceLock {
                     .timeout(timeout);
             }
         })
-            .then(() => this.checkOut())
+            .then(() => this.checkOut(task_key))
             .then(() => result)
             .catch((err) => {
-            this.checkOut();
+            this.checkOut(task_key);
             return bluebird_1.Promise.reject(err);
         });
     }
