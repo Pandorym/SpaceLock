@@ -287,4 +287,30 @@ describe('SpaceLock - default options', function() {
             });
 
     });
+
+    it('should try again and again, until exceeded try times - go to catch', function(done) {
+        let spaceLock = new SpaceLock('KEY16');
+
+        let canDone = false;
+        setTimeout(() => {
+            canDone = true;
+        }, 1100);
+
+        spaceLock
+            .doOnce_untilOneDone(() => {
+                return new Promise((resolve, reject) => {
+                    let num = 0;
+                    setTimeout(() => {
+                        resolve(num);
+                    }, canDone ? 200 : 500);
+                });
+            }, 300, 2)
+            .then(() => {
+                done('into then');
+            })
+            .catch(() => {
+                done();
+            });
+
+    });
 });

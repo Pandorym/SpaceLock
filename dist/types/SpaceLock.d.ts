@@ -20,5 +20,5 @@ export declare class SpaceLock {
     checkIn(task: Task): Promise<void>;
     checkIn(task_key?: string, func?: any): Promise<void>;
     doOnce(func: any, timeout?: number, task_key?: string): Promise<any>;
-    doOnce_untilOneDone(func: any, timeout?: number): Promise<any>;
+    doOnce_untilOneDone(func: any, timeout?: number, tryTimesLimit?: number): Promise<any>;
 }

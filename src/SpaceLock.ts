@@ -98,7 +98,7 @@ export class SpaceLock {
             });
     }
 
-    public doOnce_untilOneDone(func: any, timeout: number = this.timeout): Promise<any> {
+    public doOnce_untilOneDone(func: any, timeout: number = this.timeout, tryTimesLimit: number = null): Promise<any> {
         let result: any;
         let task = new Task(undefined, func);
 
@@ -106,7 +106,9 @@ export class SpaceLock {
             .checkIn(task)
             .then(async () => {
                 let retry: boolean;
+                let try_time = 0;
                 do {
+                    try_time++;
                     retry = false;
                     try {
                         if (timeout === null) {
@@ -117,6 +119,9 @@ export class SpaceLock {
                         }
                     }
                     catch (e) {
+                        if (tryTimesLimit !== null && try_time >= tryTimesLimit) {
+                            return Promise.reject(e);
+                        }
                         retry = true;
                     }
                 } while (retry);

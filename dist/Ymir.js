@@ -26,9 +26,9 @@ class Ymir {
         let spaceLock = this.getSpaceLock(key);
         return spaceLock.doOnce(func, timeout, task_key);
     }
-    doOnce_untilOneDone(key, func, timeout = this.options.timeout) {
+    doOnce_untilOneDone(key, func, timeout = this.options.timeout, tryTimesLimit = null) {
         let spaceLock = this.getSpaceLock(key);
-        return spaceLock.doOnce_untilOneDone(func, timeout);
+        return spaceLock.doOnce_untilOneDone(func, timeout, tryTimesLimit);
     }
     isLocked(key) {
         let spaceLock = this.getSpaceLock(key);

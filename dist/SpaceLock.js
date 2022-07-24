@@ -69,14 +69,16 @@ class SpaceLock {
             return bluebird_1.Promise.reject(err);
         });
     }
-    doOnce_untilOneDone(func, timeout = this.timeout) {
+    doOnce_untilOneDone(func, timeout = this.timeout, tryTimesLimit = null) {
         let result;
         let task = new Task_1.Task(undefined, func);
         return this
             .checkIn(task)
             .then(async () => {
             let retry;
+            let try_time = 0;
             do {
+                try_time++;
                 retry = false;
                 try {
                     if (timeout === null) {
@@ -88,6 +90,9 @@ class SpaceLock {
                     }
                 }
                 catch (e) {
+                    if (tryTimesLimit !== null && try_time >= tryTimesLimit) {
+                        return bluebird_1.Promise.reject(e);
+                    }
                     retry = true;
                 }
             } while (retry);

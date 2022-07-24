@@ -11,7 +11,7 @@ export declare class Ymir {
     checkIn(key: string): Promise<void>;
     checkOut(key: string): void;
     doOnce(key: string, func: any, timeout?: number, task_key?: string): Promise<any>;
-    doOnce_untilOneDone(key: string, func: any, timeout?: number): Promise<any>;
+    doOnce_untilOneDone(key: string, func: any, timeout?: number, tryTimesLimit?: number): Promise<any>;
     isLocked(key: string): boolean;
     isFull(key: string): boolean;
 }

@@ -1,11 +1,11 @@
 import { equal } from 'assert';
-import { Ymir } from '../src';
+import {SpaceLock, Ymir} from '../src';
 
 describe('Ymir - default options', function() {
 
     let ymir = new Ymir();
 
-    it('should can create spaceLock', function() {
+    it('should can create spaceLock', function () {
         ymir.getSpaceLock('KEY1');
         equal(ymir.getSpaceLock('KEY1').key, 'KEY1');
         equal(ymir.getSpaceLock('KEY1').spaceSize, 1);
@@ -27,8 +27,7 @@ describe('Ymir - default options', function() {
         try {
             equal(ymir.isFull('KEY3'), true);
             done();
-        }
-        catch (e) {
+        } catch (e) {
             done(e);
         }
     });
@@ -39,8 +38,7 @@ describe('Ymir - default options', function() {
         try {
             equal(ymir.isLocked('KEY4'), true);
             done();
-        }
-        catch (e) {
+        } catch (e) {
             done(e);
         }
     });
@@ -105,8 +103,7 @@ describe('Ymir - default options', function() {
                 setTimeout(() => {
                     try {
                         equal(last, 1);
-                    }
-                    catch (e) {
+                    } catch (e) {
                         done(e);
                     }
 
@@ -123,8 +120,7 @@ describe('Ymir - default options', function() {
                     try {
                         equal(last, 2);
                         done();
-                    }
-                    catch (e) {
+                    } catch (e) {
                         done(e);
                     }
 
@@ -135,14 +131,13 @@ describe('Ymir - default options', function() {
         });
     });
 
-    it('should one by one, when has multiple wait - 1000 times', function(done) {
+    it('should one by one, when has multiple wait - 1000 times', function (done) {
         let last = -1;
         for (let i = 0; i <= 1000; i++) {
             ymir.doOnce('KEY10', () => {
                 try {
                     equal(last, i - 1);
-                }
-                catch (e) {
+                } catch (e) {
                     done(e);
                 }
                 last = i;
@@ -156,7 +151,7 @@ describe('Ymir - default options', function() {
     });
 
 
-    it('should one by one, when has multiple wait - 1000 times Promise', function(done) {
+    it('should one by one, when has multiple wait - 1000 times Promise', function (done) {
         let last = -1;
 
         for (let i = 0; i <= 1000; i++) {
@@ -165,8 +160,7 @@ describe('Ymir - default options', function() {
                     setTimeout(() => {
                         try {
                             equal(last, i - 1);
-                        }
-                        catch (e) {
+                        } catch (e) {
                             done(e);
                         }
                         last = i;
@@ -183,7 +177,7 @@ describe('Ymir - default options', function() {
 
     });
 
-    it('should throw reject, when doOnce timeout', function(done) {
+    it('should throw reject, when doOnce timeout', function (done) {
         ymir
             .doOnce('KEY12', () => {
                 return new Promise(resolve => {
@@ -201,7 +195,7 @@ describe('Ymir - default options', function() {
 
     });
 
-    it('should into then, when doOnce not timeout', function(done) {
+    it('should into then, when doOnce not timeout', function (done) {
         ymir
             .doOnce('KEY13', () => {
                 return new Promise(resolve => {
@@ -219,7 +213,7 @@ describe('Ymir - default options', function() {
 
     });
 
-    it('should try again and again, until one done', function(done) {
+    it('should try again and again, until one done', function (done) {
         let canDone = false;
 
         setTimeout(() => {
@@ -244,7 +238,7 @@ describe('Ymir - default options', function() {
 
     });
 
-    it('should try again and again, until one done, with timeout option - but never go to then', function(done) {
+    it('should try again and again, until one done, with timeout option - but never go to then', function (done) {
         let canDone = false;
         setTimeout(() => {
             canDone = true;
@@ -268,5 +262,30 @@ describe('Ymir - default options', function() {
                 done();
             });
 
+    });
+
+    it('should try again and again, until exceeded try times - go to catch', function (done) {
+        let canDone = false;
+        setTimeout(() => {
+            canDone = true;
+        }, 1100);
+
+        ymir
+            .doOnce_untilOneDone('KEY16', () => {
+                return new Promise((resolve) => {
+                    let num = 0;
+                    setTimeout(() => {
+                        resolve(num);
+                    }, canDone ? 200 : 500);
+                });
+            }, 300, 2)
+            // @ts-ignore
+            .timeout(1000)
+            .then(() => {
+                done('into catch');
+            })
+            .catch(() => {
+                done();
+            });
     });
 });
