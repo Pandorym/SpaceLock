@@ -2,6 +2,7 @@
 export class Task {
     public key: string;
     public status: 'wait' | 'inside' | 'leave';
+    public result : any;
 
     private _func_cancel: any;
     private _func: any;
@@ -48,7 +49,10 @@ export class Task {
 
     public exec() {
         if (this._func !== undefined) {
-            return this._func();
+            return this._func().then((result: any) => {
+              this.result = result;
+              return result
+            });
         }
     }
 }

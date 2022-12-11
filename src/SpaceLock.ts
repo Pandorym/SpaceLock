@@ -1,8 +1,10 @@
+import *as events from 'events'
 import { Task } from './Task';
 
 export class SpaceLock {
     public key: string;
     private _: Promise<void>;
+    private emitter = new events.EventEmitter()
 
     public spaceSize: number;
     public timeout: number;
@@ -31,6 +33,10 @@ export class SpaceLock {
         return this.waitTaskQueue.length > 0;
     }
 
+    public get hasExistTask() {
+      return 0 < this.insideTaskQueue.length + this.waitTaskQueue.length
+    }
+
     constructor(key: string, options?: any) {
 
         let _options = Object.assign({}, SpaceLock.defaultOptions, options);
@@ -53,9 +59,12 @@ export class SpaceLock {
 
     public checkOut(task_key?: string) {
         let taskIndex = this.insideTaskQueue.findIndex((x) => x.key === task_key);
+        let task = this.insideTaskQueue[taskIndex]
         this.insideTaskQueue.splice(taskIndex, 1);
 
         this.update();
+
+        this.emitter.emit('checkout', task)
     }
 
     public checkIn(task: Task): Promise<void>
@@ -126,9 +135,18 @@ export class SpaceLock {
             .then(() => this.checkOut())
             .then(() => result)
             .catch((err) => {
-                console.log(err);
+                // console.log('doOnce_untilOneDone error:', err);
                 this.checkOut();
                 return Promise.reject(err);
             });
+    }
+
+    public needOneCheckout(func: any) : Promise<Task>{
+      return new Promise(resolved  => {
+        this.emitter.once('checkout', resolved)
+        if (!this.hasExistTask) {
+          this.doOnce(func).then()
+        }
+      })
     }
 }

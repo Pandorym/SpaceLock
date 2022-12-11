@@ -308,6 +308,37 @@ describe('SpaceLock - default options', function() {
             .catch(() => {
                 done();
             });
-
     });
+
+  it('needOneCheckout - should wait exist task done, and get it', async function () {
+    let spaceLock = new SpaceLock('KEY17');
+
+    spaceLock.doOnce(async () => 1 + 1).then()
+
+    let result = await spaceLock.needOneCheckout(async () =>  2 + 2)
+
+    equal(result.result, 2)
+  });
+
+  it('needOneCheckout - should wait exist task done, and get it twice', async function () {
+    let spaceLock = new SpaceLock('KEY17');
+
+    spaceLock.doOnce(async () => 1 + 1).then()
+
+    let p1 = spaceLock.needOneCheckout(async () =>  2 + 2)
+    let p2 = spaceLock.needOneCheckout(async () =>  3 + 3)
+
+    let result1 = await p1, result2 = await p2
+
+    equal(result1.result, 2)
+    equal(result2.result, 2)
+  });
+
+  it('needOneCheckout - should exec new func, and get it', async function () {
+    let spaceLock = new SpaceLock('KEY17');
+
+    let result = await spaceLock.needOneCheckout(async () =>  2 + 2)
+
+    equal(result.result, 4)
+  });
 });
