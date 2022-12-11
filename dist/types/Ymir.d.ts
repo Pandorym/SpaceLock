@@ -1,4 +1,5 @@
 import { SpaceLock } from './SpaceLock';
+import { Task } from "./Task";
 export declare class Ymir {
     spaceLocks: Array<SpaceLock>;
     static defaultOptions: {
@@ -12,6 +13,7 @@ export declare class Ymir {
     checkOut(key: string): void;
     doOnce(key: string, func: any, timeout?: number, task_key?: string): Promise<any>;
     doOnce_untilOneDone(key: string, func: any, timeout?: number, tryTimesLimit?: number): Promise<any>;
+    needOneCheckout(key: string, func: any): Promise<Task>;
     isLocked(key: string): boolean;
     isFull(key: string): boolean;
 }

@@ -30,6 +30,10 @@ class Ymir {
         let spaceLock = this.getSpaceLock(key);
         return spaceLock.doOnce_untilOneDone(func, timeout, tryTimesLimit);
     }
+    needOneCheckout(key, func) {
+        let spaceLock = this.getSpaceLock(key);
+        return spaceLock.needOneCheckout(func);
+    }
     isLocked(key) {
         let spaceLock = this.getSpaceLock(key);
         return spaceLock.isLocked;

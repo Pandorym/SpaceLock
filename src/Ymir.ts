@@ -1,4 +1,5 @@
 import { SpaceLock } from './SpaceLock';
+import {Task} from "./Task";
 
 export class Ymir {
     public spaceLocks: Array<SpaceLock> = [];
@@ -45,6 +46,11 @@ export class Ymir {
         let spaceLock = this.getSpaceLock(key);
         return spaceLock.doOnce_untilOneDone(func, timeout, tryTimesLimit);
     }
+
+  public needOneCheckout(key: string, func: any) : Promise<Task>{
+    let spaceLock = this.getSpaceLock(key);
+    return spaceLock.needOneCheckout(func);
+  }
 
     public isLocked(key: string) {
         let spaceLock = this.getSpaceLock(key);

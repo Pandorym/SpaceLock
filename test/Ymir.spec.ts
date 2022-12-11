@@ -283,4 +283,14 @@ describe('Ymir - default options', function() {
           done();
         });
     });
+
+  it('needOneCheckout - should wait exist task done, and get it', async function () {
+    let key = 'KEY17';
+
+    ymir.doOnce(key,async () => 1 + 1).then()
+
+    let result = await ymir.needOneCheckout(key, async () =>  2 + 2)
+
+    equal(result.result, 2)
+  });
 });
