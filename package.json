@@ -30,6 +30,7 @@
   "devDependencies": {
     "@types/assert": "^1.4.3",
     "@types/bluebird": "^3.5.27",
+    "@types/events": "^3.0.0",
     "@types/mocha": "^5.2.7",
     "assert": "^2.0.0",
     "gulp": "^4.0.2",
