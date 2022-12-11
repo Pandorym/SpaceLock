@@ -239,53 +239,48 @@ describe('Ymir - default options', function() {
     });
 
     it('should try again and again, until one done, with timeout option - but never go to then', function (done) {
-        let canDone = false;
-        setTimeout(() => {
-            canDone = true;
-        }, 1100);
+      let canDone = false;
+      setTimeout(() => canDone = true, 1100);
 
-        ymir
+      Promise
+        .race([
+          ymir
             .doOnce_untilOneDone('KEY15', () => {
-                return new Promise((resolve) => {
-                    let num = 0;
-                    setTimeout(() => {
-                        resolve(num);
-                    }, canDone ? 200 : 500);
-                });
-            }, 300)
-            // @ts-ignore
-            .timeout(1000)
-            .then(() => {
-                done('into catch');
-            })
-            .catch(() => {
-                done();
-            });
-
+              return new Promise((resolve, reject) => {
+                let num = 0;
+                setTimeout(() => resolve(num), canDone ? 200 : 500);
+              });
+            }, 300),
+          new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), 1000))]
+        )
+        .then(() => {
+          done('into then');
+        })
+        .catch(() => {
+          done();
+        });
     });
 
     it('should try again and again, until exceeded try times - go to catch', function (done) {
-        let canDone = false;
-        setTimeout(() => {
-            canDone = true;
-        }, 1100);
+      let canDone = false;
+      setTimeout(() => canDone = true, 1100);
 
-        ymir
+      Promise
+        .race([
+          ymir
             .doOnce_untilOneDone('KEY16', () => {
-                return new Promise((resolve) => {
-                    let num = 0;
-                    setTimeout(() => {
-                        resolve(num);
-                    }, canDone ? 200 : 500);
-                });
-            }, 300, 2)
-            // @ts-ignore
-            .timeout(1000)
-            .then(() => {
-                done('into catch');
-            })
-            .catch(() => {
-                done();
-            });
+              return new Promise((resolve, reject) => {
+                let num = 0;
+                setTimeout(() => resolve(num), canDone ? 200 : 500);
+              });
+            }, 300, 2),
+          new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), 1000))]
+        )
+        .then(() => {
+          done('into then');
+        })
+        .catch(() => {
+          done();
+        });
     });
 });

@@ -1,4 +1,3 @@
-import { Promise } from 'bluebird';
 import { Task } from './Task';
 
 export class SpaceLock {
@@ -86,8 +85,7 @@ export class SpaceLock {
                 if (timeout === null) {
                     result = await task.exec();
                 } else {
-                    result = await task.exec()
-                                       .timeout(timeout);
+                    result = Promise.race([task.exec(), new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), timeout))])
                 }
             })
             .then(() => this.checkOut(task_key))
@@ -114,8 +112,7 @@ export class SpaceLock {
                         if (timeout === null) {
                             result = await task.exec();
                         } else {
-                            result = await task.exec()
-                                               .timeout(timeout);
+                            result = Promise.race([task.exec(), new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), timeout))])
                         }
                     }
                     catch (e) {

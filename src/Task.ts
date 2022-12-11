@@ -1,4 +1,3 @@
-import { Promise } from 'bluebird';
 
 export class Task {
     public key: string;

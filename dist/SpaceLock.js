@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const bluebird_1 = require("bluebird");
+const events = require("events");
 const Task_1 = require("./Task");
 class SpaceLock {
     constructor(key, options) {
+        this.emitter = new events.EventEmitter();
         let _options = Object.assign({}, SpaceLock.defaultOptions, options);
         this.spaceSize = _options.spaceSize;
         this.timeout = _options.timeout;
@@ -24,6 +25,9 @@ class SpaceLock {
     get hasWaitTask() {
         return this.waitTaskQueue.length > 0;
     }
+    get hasExistTask() {
+        return 0 < this.insideTaskQueue.length + this.waitTaskQueue.length;
+    }
     update() {
         for (; !this.isFull && this.hasWaitTask;) {
             let task = this.waitTaskQueue.shift();
@@ -33,8 +37,10 @@ class SpaceLock {
     }
     checkOut(task_key) {
         let taskIndex = this.insideTaskQueue.findIndex((x) => x.key === task_key);
+        let task = this.insideTaskQueue[taskIndex];
         this.insideTaskQueue.splice(taskIndex, 1);
         this.update();
+        this.emitter.emit('checkout', task);
     }
     checkIn(x, y) {
         let _task;
@@ -58,15 +64,14 @@ class SpaceLock {
                 result = await task.exec();
             }
             else {
-                result = await task.exec()
-                    .timeout(timeout);
+                result = Promise.race([task.exec(), new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), timeout))]);
             }
         })
             .then(() => this.checkOut(task_key))
             .then(() => result)
             .catch((err) => {
             this.checkOut(task_key);
-            return bluebird_1.Promise.reject(err);
+            return Promise.reject(err);
         });
     }
     doOnce_untilOneDone(func, timeout = this.timeout, tryTimesLimit = null) {
@@ -85,13 +90,12 @@ class SpaceLock {
                         result = await task.exec();
                     }
                     else {
-                        result = await task.exec()
-                            .timeout(timeout);
+                        result = Promise.race([task.exec(), new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), timeout))]);
                     }
                 }
                 catch (e) {
                     if (tryTimesLimit !== null && try_time >= tryTimesLimit) {
-                        return bluebird_1.Promise.reject(e);
+                        return Promise.reject(e);
                     }
                     retry = true;
                 }
@@ -100,9 +104,17 @@ class SpaceLock {
             .then(() => this.checkOut())
             .then(() => result)
             .catch((err) => {
-            console.log(err);
+            // console.log('doOnce_untilOneDone error:', err);
             this.checkOut();
-            return bluebird_1.Promise.reject(err);
+            return Promise.reject(err);
+        });
+    }
+    needOneCheckout(func) {
+        return new Promise(resolved => {
+            this.emitter.once('checkout', resolved);
+            if (!this.hasExistTask) {
+                this.doOnce(func).then();
+            }
         });
     }
 }

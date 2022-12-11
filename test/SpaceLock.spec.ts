@@ -261,31 +261,28 @@ describe('SpaceLock - default options', function() {
     });
 
     it('should try again and again, until one done, with timeout option - but never go to then', function(done) {
-        let spaceLock = new SpaceLock('KEY15');
+      let spaceLock = new SpaceLock('KEY15');
 
-        let canDone = false;
-        setTimeout(() => {
-            canDone = true;
-        }, 1100);
+      let canDone = false;
+      setTimeout(() => canDone = true, 1100);
 
-        spaceLock
+      Promise
+        .race([
+          spaceLock
             .doOnce_untilOneDone(() => {
-                return new Promise((resolve, reject) => {
-                    let num = 0;
-                    setTimeout(() => {
-                        resolve(num);
-                    }, canDone ? 200 : 500);
-                });
-            }, 300)
-            // @ts-ignore
-            .timeout(1000)
-            .then(() => {
-                done('into then');
-            })
-            .catch(() => {
-                done();
+              return new Promise((resolve, reject) => {
+                let num = 0;
+                setTimeout(() => resolve(num), canDone ? 200 : 500);
             });
-
+          }, 300),
+          new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), 1000))]
+        )
+        .then(() => {
+          done('into then');
+        })
+        .catch(() => {
+          done();
+        });
     });
 
     it('should try again and again, until exceeded try times - go to catch', function(done) {
