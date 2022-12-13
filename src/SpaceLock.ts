@@ -94,7 +94,7 @@ export class SpaceLock {
                 if (timeout === null) {
                     result = await task.exec();
                 } else {
-                    result = Promise.race([task.exec(), new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), timeout))])
+                    result = await Promise.race([task.exec(), new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), timeout))])
                 }
             })
             .then(() => this.checkOut(task_key))
@@ -121,7 +121,7 @@ export class SpaceLock {
                         if (timeout === null) {
                             result = await task.exec();
                         } else {
-                            result = Promise.race([task.exec(), new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), timeout))])
+                            result = await Promise.race([task.exec(), new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), timeout))])
                         }
                     }
                     catch (e) {
