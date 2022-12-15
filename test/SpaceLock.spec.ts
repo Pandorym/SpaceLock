@@ -335,10 +335,26 @@ describe('SpaceLock - default options', function() {
   });
 
   it('needOneCheckout - should exec new func, and get it', async function () {
-    let spaceLock = new SpaceLock('KEY17');
+    let spaceLock = new SpaceLock('KEY18');
 
     let result = await spaceLock.needOneCheckout(async () =>  2 + 2)
 
     equal(result.result, 4)
   });
+
+  it('needOneCheckout - should exec new func (func return number), and get leave task', async function () {
+    let spaceLock = new SpaceLock('KEY19');
+
+    let result = await spaceLock.needOneCheckout(async () => 1 + 1);
+
+    equal(result.status, 'leave')
+  })
+
+  it('needOneCheckout - should exec new func (func return reject), and get thrown task', async function () {
+    let spaceLock = new SpaceLock('KEY20');
+
+    let result = await spaceLock.needOneCheckout(async () => Promise.reject('exception'));
+
+    equal(result.status, 'thrown')
+  })
 });

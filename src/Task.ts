@@ -1,7 +1,7 @@
 
 export class Task {
     public key: string;
-    public status: 'wait' | 'inside' | 'leave';
+    public status: 'wait' | 'inside' | 'leave' | 'thrown';
     public result : any;
 
     private _func_cancel: any;

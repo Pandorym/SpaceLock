@@ -67,9 +67,13 @@ class SpaceLock {
                 result = await Promise.race([task.exec(), new Promise((resolve, reject) => setTimeout(() => reject('Timeout'), timeout))]);
             }
         })
-            .then(() => this.checkOut(task_key))
+            .then(() => {
+            task.status = 'leave';
+            this.checkOut(task_key);
+        })
             .then(() => result)
             .catch((err) => {
+            task.status = 'thrown';
             this.checkOut(task_key);
             return Promise.reject(err);
         });
@@ -101,19 +105,28 @@ class SpaceLock {
                 }
             } while (retry);
         })
-            .then(() => this.checkOut())
+            .then(() => {
+            task.status = 'leave';
+            this.checkOut();
+        })
             .then(() => result)
             .catch((err) => {
             // console.log('doOnce_untilOneDone error:', err);
+            task.status = 'thrown';
             this.checkOut();
             return Promise.reject(err);
         });
     }
+    /**
+     * 要求得到一个从空间内签出的任务
+     * <br> 该签出的任务状态可能是 leave 或 thrown
+     * @param func 如果空间内不存在任务，签入执行 func
+     */
     needOneCheckout(func) {
         return new Promise(resolved => {
             this.emitter.once('checkout', resolved);
             if (!this.hasExistTask) {
-                this.doOnce(func).then();
+                this.doOnce(func).catch(() => null);
             }
         });
     }

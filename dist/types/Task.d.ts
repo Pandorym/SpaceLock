@@ -1,6 +1,6 @@
 export declare class Task {
     key: string;
-    status: 'wait' | 'inside' | 'leave';
+    status: 'wait' | 'inside' | 'leave' | 'thrown';
     result: any;
     private _func_cancel;
     private _func;
