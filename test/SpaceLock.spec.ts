@@ -357,4 +357,32 @@ describe('SpaceLock - default options', function() {
 
     equal(result.status, 'thrown')
   })
+
+  it('needOneCheckout - 20 times in same time', async function () {
+    let spaceLock = new SpaceLock('KEY21');
+
+    let result_promise_list = []
+
+    for (let i = 0; i < 20; i ++) {
+      result_promise_list.push( spaceLock.needOneCheckout(async () => 2 + 2).then(task => task.result));
+    }
+
+    let result_list = await Promise.all(result_promise_list);
+
+    equal(result_list.filter(x => x === 4).length, 20);
+  });
+
+  it('needOneCheckout - 10000 times in same time', async function () {
+    let spaceLock = new SpaceLock('KEY22');
+
+    let result_promise_list = []
+
+    for (let i = 0; i < 10000; i ++) {
+      result_promise_list.push( spaceLock.needOneCheckout(async () => 2 + 2).then(task => task.result));
+    }
+
+    let result_list = await Promise.all(result_promise_list);
+
+    equal(result_list.filter(x => x === 4).length, 10000);
+  });
 });

@@ -47,6 +47,8 @@ export class SpaceLock {
         this.key = key;
         this.waitTaskQueue = [];
         this.insideTaskQueue = [];
+
+        this.emitter.setMaxListeners(Number.MAX_SAFE_INTEGER);
     }
 
     public update() {
