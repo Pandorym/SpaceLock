@@ -1,5 +1,6 @@
 import { equal } from 'assert';
 import {SpaceLock, Ymir} from '../src';
+import {Promise} from "bluebird";
 
 describe('Ymir - default options', function() {
 
@@ -292,5 +293,23 @@ describe('Ymir - default options', function() {
     let result = await ymir.needOneCheckout(key, async () =>  2 + 2)
 
     equal(result.result, 2)
+  });
+
+  it('needOneCheckout - with specially task_key', async function () {
+    let key = 'KEY18';
+
+    let order_task_key_list: Array<any> = []
+    let result_promise_list = []
+
+    for (let i = 0; i < 30; i ++) {
+      result_promise_list.push(ymir.needOneCheckout(key, async () => 1, i % 3).then(task => order_task_key_list.push(task.key)));
+    }
+
+    await Promise.all(result_promise_list)
+
+    equal(order_task_key_list.length, 30);
+    equal(order_task_key_list.splice(0, 10).filter(x => x === 0).length, 10);
+    equal(order_task_key_list.splice(0, 10).filter(x => x === 1).length, 10);
+    equal(order_task_key_list.splice(0, 10).filter(x => x === 2).length, 10);
   });
 });

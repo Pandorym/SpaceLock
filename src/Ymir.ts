@@ -47,9 +47,9 @@ export class Ymir {
         return spaceLock.doOnce_untilOneDone(func, timeout, tryTimesLimit);
     }
 
-  public needOneCheckout(key: string, func: any) : Promise<Task>{
+  public needOneCheckout(key: string, func: any, task_key ?: any) : Promise<Task>{
     let spaceLock = this.getSpaceLock(key);
-    return spaceLock.needOneCheckout(func);
+    return spaceLock.needOneCheckout(func, task_key);
   }
 
     public isLocked(key: string) {
