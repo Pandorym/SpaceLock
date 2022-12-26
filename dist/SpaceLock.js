@@ -29,6 +29,12 @@ class SpaceLock {
     get hasExistTask() {
         return 0 < this.insideTaskQueue.length + this.waitTaskQueue.length;
     }
+    hasExistTaskSpeciallyTaskKey(task_key) {
+        if (task_key === undefined)
+            return this.hasExistTask;
+        return 0 < this.insideTaskQueue.filter(task => task.key === task_key).length
+            + this.waitTaskQueue.filter(task => task.key === task_key).length;
+    }
     update() {
         for (; !this.isFull && this.hasWaitTask;) {
             let task = this.waitTaskQueue.shift();
@@ -122,12 +128,20 @@ class SpaceLock {
      * 要求得到一个从空间内签出的任务
      * <br> 该签出的任务状态可能是 leave 或 thrown
      * @param func 如果空间内不存在任务，签入执行 func
+     * @param task_key 如不为 undef，要求得到具有相同的 task_key 的任务签出
      */
-    needOneCheckout(func) {
+    needOneCheckout(func, task_key) {
         return new Promise(resolved => {
-            this.emitter.once('checkout', resolved);
-            if (!this.hasExistTask) {
-                this.doOnce(func).catch(() => null);
+            let that = this;
+            function wrap(task) {
+                if (task_key === undefined || task.key === task_key) {
+                    that.emitter.removeListener('checkout', wrap);
+                    resolved(task);
+                }
+            }
+            this.emitter.on('checkout', wrap);
+            if (!this.hasExistTaskSpeciallyTaskKey(task_key)) {
+                this.doOnce(func, undefined, task_key).catch(() => null);
             }
         });
     }

@@ -1,5 +1,6 @@
 import { equal } from 'assert';
 import { SpaceLock } from '../src';
+import {Promise} from "bluebird";
 
 describe('SpaceLock - default options', function() {
 
@@ -384,5 +385,23 @@ describe('SpaceLock - default options', function() {
     let result_list = await Promise.all(result_promise_list);
 
     equal(result_list.filter(x => x === 4).length, 10000);
+  });
+
+  it('needOneCheckout - with specially task_key', async function () {
+    let spaceLock = new SpaceLock('KEY23');
+
+    let order_task_key_list: Array<any> = []
+    let result_promise_list = []
+
+    for (let i = 0; i < 30; i ++) {
+      result_promise_list.push(spaceLock.needOneCheckout(async () => 1, i % 3).then(task => order_task_key_list.push(task.key)));
+    }
+
+    await Promise.all(result_promise_list)
+
+    equal(order_task_key_list.length, 30);
+    equal(order_task_key_list.splice(0, 10).filter(x => x === 0).length, 10);
+    equal(order_task_key_list.splice(0, 10).filter(x => x === 1).length, 10);
+    equal(order_task_key_list.splice(0, 10).filter(x => x === 2).length, 10);
   });
 });
